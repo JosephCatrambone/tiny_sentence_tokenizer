@@ -1,0 +1,30 @@
+[package]
+name = "tiny_sentence_tokenizer"
+version = "0.1.0"
+edition = "2021"
+
+# cargo build --features "lib_features"
+# cargo build --features "bin_features"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+name = "tiny_sentence_tokenizer"
+crate-type = ["cdylib"]
+
+[[bin]]
+name = "train_model"
+path = "src/train_model.rs"
+
+[features]
+#train_model = ["burn/dataset", "burn/cuda"]
+default = []
+bin_features = ["burn/wgpu", "burn/dataset"]
+lib_features = ["burn/wgpu", "pyo3"]
+
+[dependencies]
+pyo3 = { version = "0.21.1", optional = true }
+burn = { version = "~0.13", optional = true } # features = ["wgpu"]
+
+#[dev-dependencies]
+#pretty_assertions = "1"
+
