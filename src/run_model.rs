@@ -1,18 +1,13 @@
 mod inference;
 
 use anyhow::Result;
-use ort::{GraphOptimizationLevel, Session};
 use std::io::{self, BufRead};
 
-use crate::inference::is_end_of_sentence;
+use crate::inference::{instance_model, is_end_of_sentence};
 // use thiserror::Error; for libraries and AnyHow for binaries.
 
 fn main() -> Result<()> {
-	let session = Session::builder()?
-		.with_optimization_level(GraphOptimizationLevel::Level3)?
-		.with_intra_threads(1)?
-		//.commit_from_file("rust_resources/model.onnx")?;
-		.commit_from_memory(include_bytes!("../rust_resources/model.onnx")).unwrap();
+	let session = instance_model();
 
 	let stdin = io::stdin();
 	let mut linebuffer: String = String::new();

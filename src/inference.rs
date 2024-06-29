@@ -1,8 +1,17 @@
 
-use ort::{inputs, Session};
+use ort::{GraphOptimizationLevel, inputs, Session};
 
 
 const MODEL_CONTEXT_SIZE: usize = 24;
+
+
+pub fn instance_model() -> Session {
+	Session::builder().unwrap()
+		.with_optimization_level(GraphOptimizationLevel::Level3).unwrap()
+		.with_intra_threads(1).unwrap()
+		//.commit_from_file("rust_resources/model.onnx")?;
+		.commit_from_memory(include_bytes!("../trained_models/sentence_tokenizer_v6_24x256.onnx")).unwrap()
+}
 
 
 /// Returns the last n characters or the full string if len(s) < n.

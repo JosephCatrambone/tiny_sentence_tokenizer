@@ -1,10 +1,10 @@
 mod inference;
 
-use ort::{GraphOptimizationLevel, Session};
+use ort::Session;
 use pyo3::prelude::*;
 //use pyo3::anyhow;
 use pyo3::types::{PyList, PyString};
-
+use crate::inference::instance_model;
 
 fn bulk_split(model: &Session, text: &str, min_probability: Option<f32>) -> Vec<String> {
 	let mut sentences: Vec<String> = vec![];
@@ -48,13 +48,7 @@ struct SentenceSplitter {
 impl SentenceSplitter {
 	#[new]
 	fn __new__() -> Self {
-		let session = Session::builder().unwrap()
-			.with_optimization_level(GraphOptimizationLevel::Level3).unwrap()
-			.with_intra_threads(1).unwrap()
-			//.commit_from_memory(include_bytes!(concat!(env!("OUT_DIR"), "/rust_resources/model.onnx")));
-			.commit_from_memory(include_bytes!("../rust_resources/model.onnx")).unwrap();
-
-		Self { model: session }
+		Self { model: instance_model() }
 	}
 
 	/// Returns true if the last character of the given string is the end of a sentence.
@@ -74,7 +68,7 @@ impl SentenceSplitter {
 	/// a sentence is complete exceeds 50%.  (Actually, when the predicted 'eos' > 'not eos'.)
 	#[pyo3(signature = (text, min_probability=None))]
 	fn split_text(&self, text: &str, min_probability: Option<f32>) -> PyResult<PyObject> {
-		let sentences = bulk_split(&self.model, text);
+		let sentences = bulk_split(&self.model, text, min_probability);
 
 		// Convert the vec<str> to Python:
 		Python::with_gil(|py| {
