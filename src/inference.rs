@@ -1,4 +1,4 @@
-use ndarray::{Array1, ArrayViewD, Axis};
+
 use ort::{inputs, Session};
 
 
@@ -29,16 +29,19 @@ pub fn is_end_of_sentence(model: &Session, s: &str) -> bool {
 	p_eos > p_not_eos
 }
 
-pub fn get_eos_probabilities(model: &Session, s: &str) -> (f32, f32) {
+/*
+pub fn get_eos_probabilities_ndarray(model: &Session, s: &str) -> (f32, f32) {
+	use ndarray::{Array1, ArrayViewD, Axis};
+
 	let tokens = string_to_tokens(s);
-	let mut tokens = Array1::from_iter(tokens.iter().cloned());
+	let tokens = Array1::from_iter(tokens.iter().cloned());
 	//let outputs = model.run(ort::inputs!["input" => image]?)?;
 	//let predictions = outputs["output"].try_extract_tensor::<f32>()?;
 	//let array = tokens.view().insert_axis(Axis(0)).insert_axis(Axis(1));
 	let array = tokens.view().insert_axis(Axis(0));
 	let outputs = model.run(inputs![array].unwrap()).unwrap();
 	//let generated_tokens: ArrayViewD<f32> = outputs["output"].try_extract_tensor().unwrap();
-	let mut probabilities: Vec<(usize, f32)> = outputs["output"]
+	let probabilities: Vec<(usize, f32)> = outputs["output"]
 		.try_extract_tensor().unwrap()
 		//.softmax(ndarray::Axis(1))
 		.iter()
@@ -46,4 +49,16 @@ pub fn get_eos_probabilities(model: &Session, s: &str) -> (f32, f32) {
 		.enumerate()
 		.collect::<Vec<_>>();
 	(probabilities[0].1, probabilities[1].1)
+}
+*/
+
+pub fn get_eos_probabilities(model: &Session, s: &str) -> (f32, f32) {
+	let tokens = string_to_tokens(s);
+	// Raw tensor construction takes a tuple of (dimensions, data).
+	// The model expects our input to have shape [B, _, S]
+	let input = (vec![1, tokens.len() as i64], tokens.into_boxed_slice());
+	let outputs = model.run(inputs![input].unwrap()).unwrap();
+	let (_dims, probabilities): (Vec<i64>, &[f32]) = outputs["output"]
+		.try_extract_raw_tensor::<f32>().unwrap();
+	(probabilities[0], probabilities[1])
 }

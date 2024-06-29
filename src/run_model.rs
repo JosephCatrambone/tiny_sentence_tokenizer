@@ -4,8 +4,6 @@ use anyhow::Result;
 use ort::{GraphOptimizationLevel, Session};
 use std::io::{self, BufRead};
 
-
-use inference::string_to_tokens;
 use crate::inference::is_end_of_sentence;
 // use thiserror::Error; for libraries and AnyHow for binaries.
 
@@ -16,27 +14,12 @@ fn main() -> Result<()> {
 		//.commit_from_file("rust_resources/model.onnx")?;
 		.commit_from_memory(include_bytes!("../rust_resources/model.onnx")).unwrap();
 
-
-
-	// Collect and sort logits
-	/*
-	let probabilities = &mut generated_tokens
-		.slice(s![0, 0, -1, ..])
-		.insert_axis(Axis(0))
-		.to_owned()
-		.iter()
-		.cloned()
-		.enumerate()
-		.collect::<Vec<_>>();
-	probabilities.sort_unstable_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Less));
-	*/
-
 	let stdin = io::stdin();
 	let mut linebuffer: String = String::new();
 	for line in stdin.lock().lines() {
 		let newline = line.unwrap();
-		if newline.is_empty() { continue; }
 		linebuffer.push_str(&newline);
+		if linebuffer.is_empty() { continue; }
 		let mut found_break = true;
 		while found_break {
 			found_break = false;
