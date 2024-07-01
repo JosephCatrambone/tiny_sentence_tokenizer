@@ -2,8 +2,8 @@ mod inference;
 
 use ort::Session;
 use pyo3::prelude::*;
-//use pyo3::anyhow;
-use pyo3::types::{PyList, PyString};
+use pyo3::types::PyList;
+
 use crate::inference::instance_model;
 
 fn bulk_split(model: &Session, text: &str, min_probability: Option<f32>) -> Vec<String> {
